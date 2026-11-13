@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Criador de times — PalsBuild{% endblock %}
+{% block meta_description %}Monte um time de até seis Pals e compare elementos e aptidões de trabalho.{% endblock %}
+
+{% block content %}
+  <section class="team-builder-page" id="team-builder" aria-labelledby="team-builder-title">
+    <div class="content-shell">
+      <header class="team-builder-heading">
+        <div>
+          <p class="eyebrow">PLANEJAMENTO</p>
+          <h1 id="team-builder-title">Monte seu <span>time</span></h1>
+          <p>Escolha até seis Pals e veja rapidamente os elementos e trabalhos cobertos pelo grupo.</p>
+        </div>
+      </header>
+
+      <div class="team-builder-layout">
+        <div class="team-workspace">
+          <section class="team-panel team-composition" aria-labelledby="composition-title">
+            <div class="team-panel-heading">
+              <div>
+                <p>SEU GRUPO</p>
+                <h2 id="composition-title">Composição do time</h2>
+              </div>
+              <div class="team-panel-actions">
+                <span id="team-count">0 / 6 Pals</span>
+                <button id="clear-team" type="button" disabled>Limpar time</button>
+              </div>
+            </div>
+            <div class="team-slots" id="team-slots" aria-live="polite" aria-busy="true">
+              {% for position in '123456' %}
+                <div class="team-slot team-slot-empty">
+                  <span>{{ position }}</span>
+                  <div aria-hidden="true">+</div>
+                  <strong>Espaço livre</strong>
+                  <small>Escolha um Pal no catálogo</small>
+                </div>
+              {% endfor %}
+            </div>
+          </section>
+
+          <section class="team-panel" aria-labelledby="team-summary-title">
+            <div class="team-panel-heading">
+              <div>
+                <p>VISÃO GERAL</p>
+                <h2 id="team-summary-title">Resumo do time</h2>
+              </div>
+            </div>
+            <div class="team-summary-empty" id="team-summary-empty">
+              <span aria-hidden="true">+</span>
+              <div><strong>Seu time ainda está vazio</strong><p>Adicione Pals pelo catálogo para comparar a cobertura do grupo.</p></div>
+            </div>
+            <div class="team-summary" id="team-summary" hidden>
+              <div class="team-effects-overview">
+                <h3>EFEITOS DO TIME</h3>
+                <div class="team-effect-chips" id="team-effect-chips"></div>
+                <div class="team-effect-metrics" id="team-effect-metrics"></div>
+              </div>
+
+              <div class="team-partner-effects">
+                <div class="team-subheading">
+                  <h3>Habilidades de parceiro</h3>
+                  <span id="team-partner-count"></span>
+                </div>
+                <div class="team-partner-list" id="team-partner-list"></div>
+              </div>
+
+              <details class="team-coverage">
+                <summary>Ver cobertura de elementos e trabalhos</summary>
+                <div class="team-coverage-grid">
+                  <div class="team-summary-group">
+                    <h3>Elementos</h3>
+                    <div class="team-summary-list" id="team-element-summary"></div>
+                  </div>
+                  <div class="team-summary-group">
+                    <h3>Aptidões de trabalho</h3>
+                    <div class="team-summary-list team-work-summary" id="team-work-summary"></div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </section>
+        </div>
+
+        <aside class="team-catalog team-panel" aria-labelledby="catalog-title">
+          <div class="team-panel-heading catalog-heading">
+            <div>
+              <p>PALPEDIA</p>
+              <h2 id="catalog-title">Adicionar Pals</h2>
+            </div>
+            <span id="team-result-count" role="status" aria-live="polite">— Pals</span>
+          </div>
+          <div class="team-catalog-controls">
+            <label class="team-search" for="team-search-input">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+              <input id="team-search-input" type="search" placeholder="Procurar Pal" autocomplete="off" />
+            </label>
+            <label class="team-element-select">
+              <span class="sr-only">Filtrar por elemento</span>
+              <select id="team-element-filter"><option value="all">Todos os elementos</option></select>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
+            </label>
+          </div>
+          <div class="team-catalog-list" id="team-catalog-list" aria-live="polite" aria-busy="true">
+            {% for item in '12345678' %}<div class="team-catalog-skeleton"></div>{% endfor %}
+          </div>
+          <div class="team-catalog-empty" id="team-catalog-empty" hidden>
+            <strong>Nenhum Pal encontrado</strong>
+            <span>Tente outro nome ou elemento.</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/team-builder.js' %}?v=20261113-6" defer></script>{% endblock %}

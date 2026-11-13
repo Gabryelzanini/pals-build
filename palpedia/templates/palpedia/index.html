@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Palpedia — PalsBuild{% endblock %}
+{% block meta_description %}Explore os Pals de Palworld por elemento, aptidão de trabalho e raridade.{% endblock %}
+{% block body_class %}palpedia-page{% endblock %}
+
+{% block content %}
+  <section class="palpedia" id="palpedia" aria-labelledby="page-title">
+    <div class="content-shell">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">BANCO DE DADOS</p>
+          <h1 id="page-title">Palworld <span>Pals</span></h1>
+          <p>Elementos, aptidões de trabalho, raridade e estatísticas de cada Pal.</p>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Pesquisa e ordenação">
+        <label class="search-box" for="search-input">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+          <input id="search-input" type="search" placeholder="Procurar Pal" autocomplete="off" />
+          <span class="result-count" id="result-count" role="status" aria-live="polite">— / — Pals</span>
+        </label>
+        <label class="select-box">
+          <span class="sr-only">Filtrar por raridade</span>
+          <select id="rarity-select">
+            <option value="all">Raridade: todas</option><option value="common">Comum</option><option value="rare">Raro</option><option value="epic">Épico</option><option value="legendary">Lendário</option>
+          </select>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
+        </label>
+        <label class="select-box">
+          <span class="sr-only">Ordenar Pals</span>
+          <select id="sort-select">
+            <option value="dex">Ordenar: Paldeck</option><option value="name">Ordenar: nome</option><option value="rarity">Ordenar: raridade</option><option value="work">Ordenar: melhor trabalho</option>
+          </select>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
+        </label>
+        <button class="icon-button" id="scroll-top" type="button" title="Voltar ao topo" aria-label="Voltar ao topo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12 6-6 6 6M12 6v13" /></svg>
+        </button>
+      </div>
+
+      <div class="filters">
+        <fieldset class="filter-group"><legend>Filtrar por elemento</legend><div class="filter-list" id="element-filters"></div></fieldset>
+        <fieldset class="filter-group"><legend>Filtrar por trabalho</legend><div class="filter-list" id="work-filters"></div></fieldset>
+        <fieldset class="filter-group collection-group"><legend>Filtrar por coleção</legend><div class="filter-list" id="collection-filters"></div></fieldset>
+      </div>
+      <div class="active-filter-row" id="active-filter-row" hidden><span id="active-filter-label"></span><button id="clear-filters" type="button">Limpar filtros</button></div>
+      <div class="pal-grid" id="pal-grid" aria-busy="true"></div>
+      <div class="empty-state" id="empty-state" hidden>
+        <div class="empty-orb" aria-hidden="true">?</div><h2>Nenhum Pal encontrado</h2><p>Tente outro nome ou remova alguns filtros.</p><button id="empty-clear" type="button">Limpar filtros</button>
+      </div>
+      <div class="load-more-wrap" id="load-more-wrap" hidden><button class="load-more" id="load-more" type="button">Mostrar mais Pals</button></div>
+    </div>
+  </section>
+
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'palpedia/js/app.js' %}?v=20261113-2" defer></script>{% endblock %}

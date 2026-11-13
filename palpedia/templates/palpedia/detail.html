@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Pal — PalsBuild{% endblock %}
+{% block meta_description %}Estatísticas, habilidades, trabalhos e drops de um Pal em Palworld.{% endblock %}
+
+{% block content %}
+  <section class="pal-detail-page" id="pal-detail" data-pal-slug="{{ pal_slug }}">
+    <div class="content-shell">
+      <nav class="breadcrumb" aria-label="Navegação estrutural">
+        <a href="{% url 'palpedia:index' %}">Palpedia</a>
+        <span aria-hidden="true">›</span>
+        <span id="breadcrumb-name">Detalhes</span>
+      </nav>
+
+      <div class="detail-loading" id="detail-loading" role="status">
+        <span class="detail-loading-orb" aria-hidden="true"></span>
+        <div><strong>Carregando detalhes do Pal…</strong><span>Consultando estatísticas e habilidades.</span></div>
+      </div>
+
+      <div class="detail-error" id="detail-error" hidden>
+        <div class="empty-orb" aria-hidden="true">?</div>
+        <h1>Pal não encontrado</h1>
+        <p>Não encontramos esse registro na base atual da Palpedia.</p>
+        <a class="primary-action" href="{% url 'palpedia:index' %}">Voltar para a Palpedia</a>
+      </div>
+
+      <article id="detail-content" hidden></article>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'palpedia/js/detail.js' %}?v=20261113-6" defer></script>{% endblock %}

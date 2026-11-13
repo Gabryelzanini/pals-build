@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PalsBuild — Seu universo Palworld{% endblock %}
+{% block body_class %}home-page{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+  <section class="home-hero">
+    <div class="content-shell home-hero-grid">
+      <div class="home-copy">
+        <p class="eyebrow">CONSTRUA · EXPLORE · DESCUBRA</p>
+        <h1>Seu universo<br /><span>Palworld</span><br />em um só lugar.</h1>
+        <p class="home-lead">
+          Explore todos os Pals, compare habilidades e encontre as melhores escolhas para sua equipe.
+        </p>
+        <div class="home-actions">
+          <a class="primary-action" href="{% url 'palpedia:index' %}">
+            Explorar a Palpedia
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+          </a>
+          <span class="home-count"><strong>299</strong> Pals catalogados</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+        <div class="hero-sphere">
+          <svg viewBox="0 0 48 48">
+            <path d="M7 24a17 17 0 0 1 34 0H29a5 5 0 0 0-10 0H7Z" fill="currentColor" />
+            <path d="M41 26a17 17 0 0 1-34 0h12a5 5 0 0 0 10 0h12Z" fill="currentColor" opacity=".48" />
+            <circle cx="24" cy="25" r="4" fill="white" />
+          </svg>
+        </div>
+        <span class="float-chip chip-fire"><img src="{% static 'images/icons/elements/fire48.png' %}" alt="" /></span>
+        <span class="float-chip chip-water"><img src="{% static 'images/icons/elements/water48.png' %}" alt="" /></span>
+        <span class="float-chip chip-leaf"><img src="{% static 'images/icons/elements/grass48.png' %}" alt="" /></span>
+        <span class="float-chip chip-electric"><img src="{% static 'images/icons/elements/electric48.png' %}" alt="" /></span>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
