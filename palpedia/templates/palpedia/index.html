@@ -41,12 +41,15 @@
         </button>
       </div>
 
+      <div class="filters-heading">
+        <span>Filtros</span>
+        <button class="filters-clear" id="clear-filters" type="button" hidden>Limpar filtros</button>
+      </div>
       <div class="filters">
         <fieldset class="filter-group"><legend>Filtrar por elemento</legend><div class="filter-list" id="element-filters"></div></fieldset>
         <fieldset class="filter-group"><legend>Filtrar por trabalho</legend><div class="filter-list" id="work-filters"></div></fieldset>
         <fieldset class="filter-group collection-group"><legend>Filtrar por coleção</legend><div class="filter-list" id="collection-filters"></div></fieldset>
       </div>
-      <div class="active-filter-row" id="active-filter-row" hidden><span id="active-filter-label"></span><button id="clear-filters" type="button">Limpar filtros</button></div>
       <div class="pal-grid" id="pal-grid" aria-busy="true"></div>
       <div class="empty-state" id="empty-state" hidden>
         <div class="empty-orb" aria-hidden="true">?</div><h2>Nenhum Pal encontrado</h2><p>Tente outro nome ou remova alguns filtros.</p><button id="empty-clear" type="button">Limpar filtros</button>
@@ -57,4 +60,4 @@
 
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'palpedia/js/app.js' %}?v=20261113-2" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'palpedia/js/app.js' %}?v=20261121-5" defer></script>{% endblock %}

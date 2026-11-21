@@ -4,30 +4,42 @@ const PAL_IMAGE_BASE = "https://palworld.gg/images/full_palicon";
 const LEGACY_IMAGE_BASE = "https://raw.githubusercontent.com/mlg404/palworld-paldex-api/main/public/images/paldeck";
 
 const ELEMENTS = {
-  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice48.png" },
-  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark48.png" },
-  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon48.png" },
-  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground48.png" },
-  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass48.png" },
-  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric48.png" },
-  water: { label: "Água", iconUrl: "/static/images/icons/elements/water48.png" },
-  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire48.png" },
-  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral48.png" },
+  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice128.png" },
+  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark128.png" },
+  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon128.png" },
+  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground128.png" },
+  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass128.png" },
+  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric128.png" },
+  water: { label: "Água", iconUrl: "/static/images/icons/elements/water128.png" },
+  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire128.png" },
+  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral128.png" },
+};
+
+const ELEMENT_ADVANTAGES = {
+  normal: [],
+  fire: ["grass", "ice"],
+  water: ["fire"],
+  electric: ["water"],
+  ground: ["electric"],
+  grass: ["ground"],
+  ice: ["dragon"],
+  dragon: ["dark"],
+  dark: ["normal"],
 };
 
 const WORKS = {
-  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection32.png" },
-  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool32.png" },
-  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest32.png" },
-  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame32.png" },
-  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity32.png" },
-  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft32.png" },
-  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining32.png" },
-  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm32.png" },
-  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine32.png" },
-  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding32.png" },
-  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport32.png" },
-  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering32.png" },
+  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection128.png" },
+  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool128.png" },
+  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest128.png" },
+  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame128.png" },
+  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity128.png" },
+  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft128.png" },
+  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining128.png" },
+  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm128.png" },
+  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine128.png" },
+  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding128.png" },
+  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport128.png" },
+  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering128.png" },
 };
 
 const COLLECTIONS = {
@@ -63,8 +75,8 @@ const FALLBACK_PALS = [
 const state = {
   pals: [],
   query: "",
-  element: null,
-  work: null,
+  elements: new Set(),
+  works: new Set(),
   collection: null,
   rarity: "all",
   sort: "dex",
@@ -80,8 +92,7 @@ const dom = {
   elementFilters: document.querySelector("#element-filters"),
   workFilters: document.querySelector("#work-filters"),
   collectionFilters: document.querySelector("#collection-filters"),
-  activeRow: document.querySelector("#active-filter-row"),
-  activeLabel: document.querySelector("#active-filter-label"),
+  clearFilters: document.querySelector("#clear-filters"),
   empty: document.querySelector("#empty-state"),
   loadWrap: document.querySelector("#load-more-wrap"),
   loadMore: document.querySelector("#load-more"),
@@ -128,6 +139,23 @@ function isTerrariaPal(pal) {
 
 function bestWork(pal) {
   return Math.max(0, ...Object.values(pal.workSuitability || {}).map(Number));
+}
+
+function elementMatchups(elements = []) {
+  const strong = new Set();
+  const weak = new Set();
+  elements.forEach((element) => {
+    (ELEMENT_ADVANTAGES[element] || []).forEach((target) => strong.add(target));
+    Object.entries(ELEMENT_ADVANTAGES).forEach(([attacker, targets]) => {
+      if (targets.includes(element)) weak.add(attacker);
+    });
+  });
+  return { strong: [...strong], weak: [...weak] };
+}
+
+function matchupIcons(elements) {
+  if (!elements.length) return '<span aria-hidden="true">—</span>';
+  return elements.map((element) => `<span title="${ELEMENTS[element]?.label || element}">${catalogIconMarkup(ELEMENTS[element], "pal-matchup-icon")}</span>`).join("");
 }
 
 function catalogIconMarkup(item, className = "catalog-icon") {
@@ -181,7 +209,12 @@ function renderFilterButtons(target, items, type) {
     button.setAttribute("aria-pressed", "false");
     button.innerHTML = `<span aria-hidden="true">${catalogIconMarkup(item, "filter-icon-image")}</span>`;
     button.addEventListener("click", () => {
-      state[type] = state[type] === key ? null : key;
+      if (state[type] instanceof Set) {
+        if (state[type].has(key)) state[type].delete(key);
+        else state[type].add(key);
+      } else {
+        state[type] = state[type] === key ? null : key;
+      }
       state.visible = 30;
       updateFilterButtons();
       render();
@@ -193,7 +226,10 @@ function renderFilterButtons(target, items, type) {
 function updateFilterButtons() {
   document.querySelectorAll(".filter-chip").forEach((button) => {
     const parentType = button.dataset.filterType;
-    const active = state[parentType] === button.dataset.value;
+    const selected = state[parentType];
+    const active = selected instanceof Set
+      ? selected.has(button.dataset.value)
+      : selected === button.dataset.value;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
@@ -206,8 +242,8 @@ function filteredPals() {
     const searchText = normalize(`${pal.namePt} ${pal.name} ${pal.paldeckNumber}`);
     return (
       (!query || searchText.includes(query)) &&
-      (!state.element || pal.elements?.includes(state.element)) &&
-      (!state.work || Number(pal.workSuitability?.[state.work] || 0) > 0) &&
+      (!state.elements.size || [...state.elements].some((element) => pal.elements?.includes(element))) &&
+      (!state.works.size || [...state.works].some((work) => Number(pal.workSuitability?.[work] || 0) > 0)) &&
       (!state.collection || (state.collection === "terraria" && isTerrariaPal(pal))) &&
       (state.rarity === "all" || rarity === state.rarity)
     );
@@ -223,6 +259,10 @@ function filteredPals() {
 
 function createCard(pal) {
   const rarity = rarityInfo(pal.rarity);
+  const matchups = elementMatchups(pal.elements || []);
+  const workLevels = Object.entries(pal.workSuitability || {})
+    .filter(([, level]) => Number(level) > 0)
+    .sort((a, b) => Number(b[1]) - Number(a[1]) || (WORKS[a[0]]?.label || a[0]).localeCompare(WORKS[b[0]]?.label || b[0], "pt-BR"));
   const card = document.createElement("a");
   card.className = `pal-card ${rarity.key}`;
   card.href = `/palpedia/${toPalSlug(pal.name)}/`;
@@ -232,12 +272,25 @@ function createCard(pal) {
   top.className = "card-top";
   top.innerHTML = `
     <div class="element-stack">${(pal.elements || []).map((element) => `<span class="element-dot" title="${ELEMENTS[element]?.label || element}">${catalogIconMarkup(ELEMENTS[element], "element-icon-image")}</span>`).join("")}</div>
-    <span class="work-count" title="Melhor nível de trabalho"><span aria-hidden="true">⚒</span><strong>${bestWork(pal)}</strong></span>
   `;
 
+  const visual = document.createElement("div");
+  visual.className = `pal-card-visual${workLevels.length ? " has-work-levels" : ""}`;
   const portrait = document.createElement("div");
   portrait.className = "pal-portrait";
   portrait.appendChild(createImage(pal));
+  visual.appendChild(portrait);
+  if (workLevels.length) {
+    const workList = document.createElement("div");
+    workList.className = "pal-work-levels";
+    workList.setAttribute("aria-label", "Aptidões de trabalho");
+    workList.innerHTML = workLevels.map(([work, level]) => {
+      const item = WORKS[work] || { label: work };
+      const numericLevel = Number(level) || 0;
+      return `<span title="${escapeHtml(item.label)} nível ${numericLevel}" aria-label="${escapeHtml(item.label)}, nível ${numericLevel}">${catalogIconMarkup(item, "pal-work-level-icon")}<strong>${numericLevel}</strong></span>`;
+    }).join("");
+    visual.appendChild(workList);
+  }
 
   const body = document.createElement("div");
   body.className = "card-body";
@@ -246,14 +299,16 @@ function createCard(pal) {
       <h2 class="pal-name">${escapeHtml(pal.namePt || pal.name)}</h2>
       <span class="pal-number">${formatDex(pal.paldeckNumber)}</span>
     </div>
-    <p class="element-names">${(pal.elements || []).map((element) => ELEMENTS[element]?.label || element).join(" · ") || "Sem elemento"}</p>
+    <div class="pal-matchups" aria-label="Efetividades elementais">
+      <div class="is-strong"><strong>Forte</strong><span>${matchupIcons(matchups.strong)}</span></div>
+      <div class="is-weak"><strong>Fraco</strong><span>${matchupIcons(matchups.weak)}</span></div>
+    </div>
     <div class="rarity-pill">
-      <span class="rarity-value">${Number(pal.rarity) || 0}</span>
       <span class="rarity-name">${rarity.label}</span>
     </div>
   `;
 
-  card.append(top, portrait, body);
+  card.append(top, visual, body);
   return card;
 }
 
@@ -273,14 +328,13 @@ function render() {
   dom.loadWrap.hidden = pals.length <= state.visible;
   if (pals.length > state.visible) dom.loadMore.textContent = `Mostrar mais ${Math.min(30, pals.length - state.visible)} Pals`;
 
-  const filterLabels = [];
-  if (state.query) filterLabels.push(`busca “${state.query}”`);
-  if (state.element) filterLabels.push(`elemento ${ELEMENTS[state.element]?.label}`);
-  if (state.work) filterLabels.push(`trabalho ${WORKS[state.work]?.label}`);
-  if (state.collection) filterLabels.push(`coleção ${COLLECTIONS[state.collection]?.label}`);
-  if (state.rarity !== "all") filterLabels.push(`raridade ${rarityInfo({ common: 1, rare: 5, epic: 8, legendary: 20 }[state.rarity]).label}`);
-  dom.activeRow.hidden = filterLabels.length === 0;
-  dom.activeLabel.textContent = filterLabels.length ? `Filtros ativos: ${filterLabels.join(" · ")}` : "";
+  dom.clearFilters.hidden = !(
+    state.query ||
+    state.elements.size ||
+    state.works.size ||
+    state.collection ||
+    state.rarity !== "all"
+  );
 }
 
 function showSkeletons() {
@@ -289,8 +343,8 @@ function showSkeletons() {
 
 function clearFilters() {
   state.query = "";
-  state.element = null;
-  state.work = null;
+  state.elements.clear();
+  state.works.clear();
   state.collection = null;
   state.rarity = "all";
   state.visible = 30;
@@ -353,8 +407,8 @@ async function fetchJson(url, timeoutMs = 12000) {
 
 async function loadData() {
   showSkeletons();
-  renderFilterButtons(dom.elementFilters, ELEMENTS, "element");
-  renderFilterButtons(dom.workFilters, WORKS, "work");
+  renderFilterButtons(dom.elementFilters, ELEMENTS, "elements");
+  renderFilterButtons(dom.workFilters, WORKS, "works");
   renderFilterButtons(dom.collectionFilters, COLLECTIONS, "collection");
 
   try {
@@ -389,7 +443,7 @@ dom.loadMore.addEventListener("click", () => {
   state.visible += 30;
   render();
 });
-document.querySelector("#clear-filters").addEventListener("click", clearFilters);
+dom.clearFilters.addEventListener("click", clearFilters);
 document.querySelector("#empty-clear").addEventListener("click", clearFilters);
 document.querySelector("#scroll-top").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 

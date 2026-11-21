@@ -1,6 +1,6 @@
 # Fontes de dados
 
-O PalsBuild utiliza fontes públicas para montar e traduzir a Palpedia:
+O projeto PalsBuild utiliza fontes públicas para montar e traduzir a Palpedia:
 
 - **[PalworldOnline](https://www.palworldonline.net/data):** dados principais dos 299 Pals, como estatísticas, elementos, trabalhos, habilidades e drops.
 - **[palworld-knowledge](https://github.com/GGarnize/palworld-knowledge):** nomes oficiais em PT-BR e IDs internos.

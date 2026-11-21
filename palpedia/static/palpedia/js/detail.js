@@ -5,30 +5,52 @@ const DETAIL_IMAGE_BASE = "https://palworld.gg/images/full_palicon";
 const DETAIL_LEGACY_IMAGE_BASE = "https://raw.githubusercontent.com/mlg404/palworld-paldex-api/main/public/images/paldeck";
 
 const DETAIL_ELEMENTS = {
-  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice48.png" },
-  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark48.png" },
-  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon48.png" },
-  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground48.png" },
-  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass48.png" },
-  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric48.png" },
-  water: { label: "Água", iconUrl: "/static/images/icons/elements/water48.png" },
-  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire48.png" },
-  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral48.png" },
+  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice128.png" },
+  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark128.png" },
+  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon128.png" },
+  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground128.png" },
+  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass128.png" },
+  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric128.png" },
+  water: { label: "Água", iconUrl: "/static/images/icons/elements/water128.png" },
+  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire128.png" },
+  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral128.png" },
+};
+
+const DETAIL_ELEMENT_ADVANTAGES = {
+  normal: [],
+  fire: ["grass", "ice"],
+  water: ["fire"],
+  electric: ["water"],
+  ground: ["electric"],
+  grass: ["ground"],
+  ice: ["dragon"],
+  dragon: ["dark"],
+  dark: ["normal"],
 };
 
 const DETAIL_WORKS = {
-  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection32.png" },
-  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool32.png" },
-  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest32.png" },
-  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame32.png" },
-  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity32.png" },
-  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft32.png" },
-  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining32.png" },
-  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm32.png" },
-  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine32.png" },
-  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding32.png" },
-  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport32.png" },
-  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering32.png" },
+  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection128.png" },
+  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool128.png" },
+  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest128.png" },
+  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame128.png" },
+  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity128.png" },
+  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft128.png" },
+  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining128.png" },
+  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm128.png" },
+  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine128.png" },
+  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding128.png" },
+  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport128.png" },
+  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering128.png" },
+};
+
+const DETAIL_PASSIVE_EFFECTS = {
+  MaxHP: "PV máximo",
+  MeleeAttack: "Ataque corpo a corpo",
+  ShotAttack: "Ataque",
+  Defense: "Defesa",
+  Support: "Suporte",
+  CraftSpeed: "Velocidade de trabalho",
+  MoveSpeed: "Velocidade de movimento",
 };
 
 const detailRoot = document.querySelector("#pal-detail");
@@ -36,7 +58,7 @@ const detailContent = document.querySelector("#detail-content");
 const detailLoading = document.querySelector("#detail-loading");
 const detailError = document.querySelector("#detail-error");
 const requestedSlug = detailRoot?.dataset.palSlug || "";
-const DETAIL_PT_CONTENT_URL = `/api/pal-content/${encodeURIComponent(requestedSlug)}/`;
+const DETAIL_PT_CONTENT_URL = `/api/pal-content/${encodeURIComponent(requestedSlug)}/?v=20261121-3`;
 
 function detailNormalize(value = "") {
   return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -68,6 +90,28 @@ function detailIcon(item, className = "detail-inline-icon") {
   return item?.iconUrl ? `<img class="${className}" src="${item.iconUrl}" alt="" />` : "";
 }
 
+function detailElementMatchups(elements = []) {
+  const strong = new Set();
+  const weak = new Set();
+  elements.forEach((element) => {
+    (DETAIL_ELEMENT_ADVANTAGES[element] || []).forEach((target) => strong.add(target));
+    Object.entries(DETAIL_ELEMENT_ADVANTAGES).forEach(([attacker, targets]) => {
+      if (targets.includes(element)) weak.add(attacker);
+    });
+  });
+  return { strong: [...strong], weak: [...weak] };
+}
+
+function detailMatchupMarkup(elements, emptyText) {
+  if (!elements.length) return `<span class="detail-matchup-empty">${detailEscape(emptyText)}</span>`;
+  return elements.map((element) => `<span>${detailIcon(DETAIL_ELEMENTS[element], "detail-matchup-icon")}${detailEscape(DETAIL_ELEMENTS[element]?.label || element)}</span>`).join("");
+}
+
+function validActiveSkillName(value = "") {
+  const normalized = detailNormalize(value).replace(/:$/, "");
+  return value && !["alcance", "range", "poder", "power", "recarga", "cooldown"].includes(normalized) ? value : "";
+}
+
 function findLocalizedPal(pal, rows) {
   const name = detailNormalize(pal.name);
   const internalId = detailNormalize(pal.ids?.palpedia);
@@ -87,7 +131,25 @@ function fillPassiveDescription(passive) {
   (passive.effects || []).forEach((effect, index) => {
     description = description.replaceAll(`{EffectValue${index + 1}}`, String(Math.abs(Number(effect.value))));
   });
-  return description || "Efeito passivo natural deste Pal.";
+  if (description) return description;
+
+  const effects = (passive.effects || []).map((effect) => {
+    const label = DETAIL_PASSIVE_EFFECTS[effect.type];
+    const value = Number(effect.value);
+    if (!label || !Number.isFinite(value)) return "";
+    const formattedValue = Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ",");
+    return `${label} ${value > 0 ? "+" : ""}${formattedValue}%`;
+  }).filter(Boolean);
+
+  return effects.join(" · ") || "Descrição não disponível na base de dados.";
+}
+
+function passiveClassification(passive) {
+  const rank = Number(passive.rank) || 0;
+  if (rank < 0) return { className: "is-negative", label: "Efeito negativo" };
+  if (rank >= 4) return { className: "is-special", label: "Efeito especial" };
+  if (rank > 0) return { className: "is-positive", label: "Efeito positivo" };
+  return { className: "is-special", label: "Efeito especial" };
 }
 
 function statMaximum(pals, readValue) {
@@ -113,6 +175,7 @@ function renderDetail(pal, localized, passiveRows, metadata, ptContent = {}) {
   const namePt = localized?.name?.ptBR || pal.name;
   const rarity = detailRarity(pal.rarity);
   const workEntries = Object.entries(pal.workSuitability || {}).sort(([, a], [, b]) => Number(b) - Number(a));
+  const elementMatchups = detailElementMatchups(pal.elements || []);
   const passiveById = new Map(passiveRows.map((passive) => [passive.id, passive]));
   const naturalPassives = (localized?.naturalPassives || []).map((id) => passiveById.get(id)).filter(Boolean);
   const activeSkills = [...(pal.learnedSkills || [])].sort((a, b) => Number(a.level) - Number(b.level));
@@ -156,6 +219,10 @@ function renderDetail(pal, localized, passiveRows, metadata, ptContent = {}) {
           <span class="detail-rarity">${rarity.label} · ${Number(pal.rarity) || 0}</span>
           ${flags.map((flag) => `<span>${detailEscape(flag)}</span>`).join("")}
         </div>
+        <div class="detail-matchups" aria-label="Efetividades elementais">
+          <div class="is-strong"><strong>Forte contra</strong><span>${detailMatchupMarkup(elementMatchups.strong, "Sem vantagem direta")}</span></div>
+          <div class="is-weak"><strong>Vulnerável a</strong><span>${detailMatchupMarkup(elementMatchups.weak, "Sem fraqueza registrada")}</span></div>
+        </div>
       </div>
       <div class="detail-summary">
         <div><span>Melhor trabalho</span><strong>${workEntries.length ? `${DETAIL_WORKS[workEntries[0][0]]?.label || workEntries[0][0]} Lv ${workEntries[0][1]}` : "Nenhum"}</strong></div>
@@ -178,12 +245,13 @@ function renderDetail(pal, localized, passiveRows, metadata, ptContent = {}) {
           <div class="active-skill-list">
             ${activeSkills.length ? activeSkills.map((skill, index) => {
               const translated = activeSkillsPt[index] || {};
+              const skillName = validActiveSkillName(translated.name);
               return `
               <article class="active-skill-card">
                 <div class="skill-element">${detailIcon(DETAIL_ELEMENTS[skill.element], "skill-element-icon")}</div>
-                <div class="skill-info">
+                <div class="skill-info${skillName ? "" : " skill-info-no-title"}">
                   <span>Aprende no nível ${detailEscape(skill.level)}</span>
-                  <h3>${detailEscape(translated.name || `Habilidade de ${DETAIL_ELEMENTS[skill.element]?.label || "combate"}`)}</h3>
+                  ${skillName ? `<h3>${detailEscape(skillName)}</h3>` : ""}
                   <small>${detailEscape(DETAIL_ELEMENTS[skill.element]?.label || "Elemento não informado")}</small>
                   ${translated.description ? `<p>${detailEscape(translated.description)}</p>` : ""}
                 </div>
@@ -196,12 +264,14 @@ function renderDetail(pal, localized, passiveRows, metadata, ptContent = {}) {
         <section class="detail-section">
           <div class="detail-section-heading"><div><p>TRAÇOS</p><h2>Passivas naturais</h2></div></div>
           <div class="passive-grid">
-            ${naturalPassives.length ? naturalPassives.map((passive) => `
-              <article class="passive-card rank-${Math.min(3, Math.max(0, Number(passive.rank) || 0))}">
-                <div><span>Rank ${detailEscape(passive.rank ?? 0)}</span><h3>${detailEscape(passive.name?.ptBR || "Passiva natural")}</h3></div>
+            ${naturalPassives.length ? naturalPassives.map((passive) => {
+              const classification = passiveClassification(passive);
+              return `
+              <article class="passive-card ${classification.className}">
+                <div><span>${classification.label}</span><h3>${detailEscape(passive.name?.ptBR || "Passiva natural")}</h3></div>
                 <p>${detailEscape(fillPassiveDescription(passive))}</p>
               </article>
-            `).join("") : '<p class="detail-muted">Este Pal não possui uma passiva natural registrada.</p>'}
+            `; }).join("") : '<p class="detail-muted">Este Pal não possui uma passiva natural registrada.</p>'}
           </div>
         </section>
 

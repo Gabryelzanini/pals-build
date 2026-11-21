@@ -140,15 +140,15 @@ class PalContentParser(HTMLParser):
             return
 
         if self.section == "partner":
-            if tag == "div" and "name" in classes:
+            if tag == "div" and "name" in classes and not self.partner["name"]:
                 self._start_capture("partner_name")
-            elif tag == "p":
+            elif tag == "p" and not self.partner["description"]:
                 self._start_capture("partner_description")
         elif self.section == "active":
             if tag == "div" and "item" in classes and self.current_active is None:
                 self.current_active = {"name": "", "level": None, "description": ""}
                 self.item_depth = self.section_depth
-            elif self.current_active is not None and tag == "div" and "name" in classes:
+            elif self.current_active is not None and tag == "div" and "name" in classes and not self.current_active["name"]:
                 self._start_capture("active_name")
             elif self.current_active is not None and tag == "div" and "level" in classes:
                 self._start_capture("active_level")

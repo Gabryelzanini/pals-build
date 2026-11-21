@@ -31,10 +31,10 @@
             <div class="team-slots" id="team-slots" aria-live="polite" aria-busy="true">
               {% for position in '123456' %}
                 <div class="team-slot team-slot-empty">
-                  <span>{{ position }}</span>
-                  <div aria-hidden="true">+</div>
+                  <button class="team-add-guide-button" type="button" data-team-action="catalog" data-team-index="{{ forloop.counter0 }}" aria-label="Ir para Adicionar Pals">+</button>
+                  <span class="team-slot-position">Slot {{ position }}</span>
                   <strong>Espaço livre</strong>
-                  <small>Escolha um Pal no catálogo</small>
+                  <small>Adicione um Pal pelo catálogo</small>
                 </div>
               {% endfor %}
             </div>
@@ -48,7 +48,7 @@
               </div>
             </div>
             <div class="team-summary-empty" id="team-summary-empty">
-              <span aria-hidden="true">+</span>
+              <button class="team-add-guide-button team-summary-guide" type="button" data-team-action="catalog" aria-label="Ir para Adicionar Pals">+</button>
               <div><strong>Seu time ainda está vazio</strong><p>Adicione Pals pelo catálogo para comparar a cobertura do grupo.</p></div>
             </div>
             <div class="team-summary" id="team-summary" hidden>
@@ -56,6 +56,17 @@
                 <h3>EFEITOS DO TIME</h3>
                 <div class="team-effect-chips" id="team-effect-chips"></div>
                 <div class="team-effect-metrics" id="team-effect-metrics"></div>
+              </div>
+
+              <div class="team-matchups" aria-label="Efetividades elementais do time">
+                <section>
+                  <div class="team-subheading"><h3>Forte contra</h3><span>Cobertura ofensiva</span></div>
+                  <div class="team-matchup-list is-strong" id="team-effective-elements"></div>
+                </section>
+                <section>
+                  <div class="team-subheading"><h3>Vulnerável a</h3><span>Ameaças ao grupo</span></div>
+                  <div class="team-matchup-list is-weak" id="team-threat-elements"></div>
+                </section>
               </div>
 
               <div class="team-partner-effects">
@@ -115,4 +126,4 @@
   </section>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/team-builder.js' %}?v=20261113-6" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/team-builder.js' %}?v=20261121-1" defer></script>{% endblock %}

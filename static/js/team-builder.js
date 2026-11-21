@@ -9,30 +9,42 @@ const TEAM_STORAGE_KEY = "palsbuild-team-v1";
 const TEAM_LIMIT = 6;
 
 const TEAM_ELEMENTS = {
-  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice48.png" },
-  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark48.png" },
-  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon48.png" },
-  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground48.png" },
-  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass48.png" },
-  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric48.png" },
-  water: { label: "Água", iconUrl: "/static/images/icons/elements/water48.png" },
-  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire48.png" },
-  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral48.png" },
+  ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice128.png" },
+  dark: { label: "Sombrio", iconUrl: "/static/images/icons/elements/dark128.png" },
+  dragon: { label: "Dragão", iconUrl: "/static/images/icons/elements/dragon128.png" },
+  ground: { label: "Terra", iconUrl: "/static/images/icons/elements/ground128.png" },
+  grass: { label: "Folha", iconUrl: "/static/images/icons/elements/grass128.png" },
+  electric: { label: "Elétrico", iconUrl: "/static/images/icons/elements/electric128.png" },
+  water: { label: "Água", iconUrl: "/static/images/icons/elements/water128.png" },
+  fire: { label: "Fogo", iconUrl: "/static/images/icons/elements/fire128.png" },
+  normal: { label: "Normal", iconUrl: "/static/images/icons/elements/neutral128.png" },
+};
+
+const TEAM_ELEMENT_ADVANTAGES = {
+  normal: [],
+  fire: ["grass", "ice"],
+  water: ["fire"],
+  electric: ["water"],
+  ground: ["electric"],
+  grass: ["ground"],
+  ice: ["dragon"],
+  dragon: ["dark"],
+  dark: ["normal"],
 };
 
 const TEAM_WORKS = {
-  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection32.png" },
-  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool32.png" },
-  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest32.png" },
-  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame32.png" },
-  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity32.png" },
-  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft32.png" },
-  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining32.png" },
-  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm32.png" },
-  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine32.png" },
-  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding32.png" },
-  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport32.png" },
-  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering32.png" },
+  gathering: { label: "Coleta", iconUrl: "/static/images/icons/works/collection128.png" },
+  cooling: { label: "Resfriamento", iconUrl: "/static/images/icons/works/cool128.png" },
+  lumbering: { label: "Desmatamento", iconUrl: "/static/images/icons/works/deforest128.png" },
+  kindling: { label: "Acendimento", iconUrl: "/static/images/icons/works/emitFlame128.png" },
+  generatingElectricity: { label: "Geração de eletricidade", iconUrl: "/static/images/icons/works/generateElectricity128.png" },
+  handiwork: { label: "Trabalho manual", iconUrl: "/static/images/icons/works/handcraft128.png" },
+  mining: { label: "Mineração", iconUrl: "/static/images/icons/works/mining128.png" },
+  farming: { label: "Agricultura", iconUrl: "/static/images/icons/works/monsterFarm128.png" },
+  medicineProduction: { label: "Produção de medicamentos", iconUrl: "/static/images/icons/works/productMedicine128.png" },
+  planting: { label: "Plantio", iconUrl: "/static/images/icons/works/seeding128.png" },
+  transporting: { label: "Transporte", iconUrl: "/static/images/icons/works/transport128.png" },
+  watering: { label: "Rega", iconUrl: "/static/images/icons/works/watering128.png" },
 };
 
 const TEAM_FALLBACK_PALS = [
@@ -74,10 +86,13 @@ const teamDom = {
   summaryEmpty: document.querySelector("#team-summary-empty"),
   effectChips: document.querySelector("#team-effect-chips"),
   effectMetrics: document.querySelector("#team-effect-metrics"),
+  effectiveElements: document.querySelector("#team-effective-elements"),
+  threatElements: document.querySelector("#team-threat-elements"),
   partnerCount: document.querySelector("#team-partner-count"),
   partnerList: document.querySelector("#team-partner-list"),
   elementSummary: document.querySelector("#team-element-summary"),
   workSummary: document.querySelector("#team-work-summary"),
+  catalogPanel: document.querySelector(".team-catalog"),
   catalog: document.querySelector("#team-catalog-list"),
   catalogEmpty: document.querySelector("#team-catalog-empty"),
   resultCount: document.querySelector("#team-result-count"),
@@ -122,6 +137,28 @@ function teamIcon(item, className = "team-summary-icon") {
   return item?.iconUrl ? `<img class="${className}" src="${item.iconUrl}" alt="" />` : "";
 }
 
+function teamElementMatchups(elements = []) {
+  const strong = new Set();
+  const weak = new Set();
+  elements.forEach((element) => {
+    (TEAM_ELEMENT_ADVANTAGES[element] || []).forEach((target) => strong.add(target));
+    Object.entries(TEAM_ELEMENT_ADVANTAGES).forEach(([attacker, targets]) => {
+      if (targets.includes(element)) weak.add(attacker);
+    });
+  });
+  return { strong: [...strong], weak: [...weak] };
+}
+
+function teamMatchupListMarkup(entries, emptyMessage) {
+  if (!entries.length) return `<span class="team-matchup-empty">${teamEscape(emptyMessage)}</span>`;
+  return entries.map(([element, count]) => `
+    <span title="${teamEscape(TEAM_ELEMENTS[element]?.label || element)}">
+      ${teamIcon(TEAM_ELEMENTS[element], "team-matchup-icon")}
+      <strong>${teamEscape(TEAM_ELEMENTS[element]?.label || element)}</strong>
+      ${count > 1 ? `<small>×${count}</small>` : ""}
+    </span>`).join("");
+}
+
 function teamImageUrl(pal) {
   return pal.internalId ? `${TEAM_IMAGE_BASE}/T_${pal.internalId}_icon_normal.png` : "";
 }
@@ -137,6 +174,7 @@ function createTeamImage(pal) {
   image.alt = pal.namePt || pal.name;
   image.loading = "lazy";
   image.decoding = "async";
+  image.draggable = false;
   image.addEventListener("error", () => {
     const legacy = teamLegacyImageUrl(pal);
     if (legacy && image.dataset.fallback !== "true") {
@@ -198,26 +236,53 @@ function renderTeamSlots() {
       const empty = document.createElement("div");
       empty.className = "team-slot team-slot-empty";
       empty.dataset.teamIndex = String(index);
-      empty.innerHTML = `<span>${index + 1}</span><div aria-hidden="true">+</div><strong>Espaço livre</strong><small>Escolha um Pal no catálogo</small>`;
+      empty.innerHTML = `<button class="team-add-guide-button" type="button" data-team-action="catalog" data-team-index="${index}" aria-label="Ir para Adicionar Pals">+</button><span class="team-slot-position">Slot ${index + 1}</span><strong>Espaço livre</strong><small>Adicione um Pal pelo catálogo</small>`;
       teamDom.slots.appendChild(empty);
       continue;
     }
 
+    const workEntries = Object.entries(pal.workSuitability || {})
+      .filter(([, level]) => Number(level) > 0)
+      .sort((a, b) => Number(b[1]) - Number(a[1]));
+    const baseStats = [
+      ["HP", pal.stats?.hp],
+      ["Ataque", pal.stats?.shotAttack],
+      ["Defesa", pal.stats?.defense],
+      ["Suporte", pal.stats?.support],
+    ];
     const slot = document.createElement("article");
     slot.className = "team-slot team-slot-filled";
     slot.style.setProperty("--team-slot-accent", teamRarityAccent(pal.rarity));
     slot.innerHTML = `
-      <span class="team-slot-number">${index + 1}</span>
-      <a class="team-slot-portrait" href="/palpedia/${teamSlug(pal.name)}/" aria-label="Abrir página de ${teamEscape(pal.namePt)}"></a>
-      <div class="team-slot-copy">
-        <span>${teamFormatDex(pal.paldeckNumber)}</span>
-        <h3>${teamEscape(pal.namePt || pal.name)}</h3>
-        <div>${(pal.elements || []).map((element) => teamIcon(TEAM_ELEMENTS[element], "team-element-icon")).join("")}</div>
-      </div>
+      <button class="team-flip-button" type="button" data-team-action="flip" data-team-index="${index}" aria-label="Mostrar estatísticas de ${teamEscape(pal.namePt || pal.name)}" aria-pressed="false">?</button>
       <button class="team-remove" type="button" data-team-action="remove" data-team-index="${index}" aria-label="Remover ${teamEscape(pal.namePt)}">×</button>
-      <button class="team-drag-handle" type="button" data-team-index="${index}" aria-label="Segure e arraste para reorganizar ${teamEscape(pal.namePt)}">
-        <span aria-hidden="true">⠿</span> Segure e arraste
-      </button>`;
+      <div class="team-slot-flipper">
+        <div class="team-slot-face team-slot-front">
+          <a class="team-slot-portrait" href="/palpedia/${teamSlug(pal.name)}/" aria-label="Abrir página de ${teamEscape(pal.namePt)}" draggable="false"></a>
+          <div class="team-slot-copy">
+            <span>Slot ${index + 1} · ${teamFormatDex(pal.paldeckNumber)}</span>
+            <h3>${teamEscape(pal.namePt || pal.name)}</h3>
+            <div>${(pal.elements || []).map((element) => teamIcon(TEAM_ELEMENTS[element], "team-element-icon")).join("")}</div>
+          </div>
+          <button class="team-drag-handle" type="button" data-team-index="${index}" aria-label="Mover ${teamEscape(pal.namePt || pal.name)} com as setas do teclado">
+            <span aria-hidden="true">⠿</span> Arraste o card
+          </button>
+        </div>
+        <div class="team-slot-face team-slot-back" aria-hidden="true">
+          <div class="team-slot-back-heading">
+            <span>RESUMO BASE · SLOT ${index + 1}</span>
+            <strong>${teamEscape(pal.namePt || pal.name)}</strong>
+          </div>
+          <div class="team-slot-stats">
+            ${baseStats.map(([label, value]) => `<div><span>${label}</span><strong>${Number(value) || 0}</strong></div>`).join("")}
+          </div>
+          <div class="team-slot-works">
+            <span>Aptidões</span>
+            <div>${workEntries.length ? workEntries.map(([work, level]) => `<span title="${teamEscape(TEAM_WORKS[work]?.label || work)}">${teamIcon(TEAM_WORKS[work], "team-back-work-icon")}<strong>Lv ${Number(level) || 0}</strong></span>`).join("") : "<small>Nenhuma aptidão</small>"}</div>
+          </div>
+        </div>
+      </div>
+    `;
     slot.dataset.teamIndex = String(index);
     slot.querySelector(".team-slot-portrait").appendChild(createTeamImage(pal));
     teamDom.slots.appendChild(slot);
@@ -279,8 +344,13 @@ function renderTeamSummary() {
   const elements = new Map();
   const works = new Map();
   const effects = new Map();
+  const effectiveElements = new Map();
+  const threatElements = new Map();
   team.forEach((pal) => {
     (pal.elements || []).forEach((element) => elements.set(element, (elements.get(element) || 0) + 1));
+    const matchups = teamElementMatchups(pal.elements || []);
+    matchups.strong.forEach((element) => effectiveElements.set(element, (effectiveElements.get(element) || 0) + 1));
+    matchups.weak.forEach((element) => threatElements.set(element, (threatElements.get(element) || 0) + 1));
     teamEffectCategories(pal).forEach((effect) => effects.set(effect, (effects.get(effect) || 0) + 1));
     Object.entries(pal.workSuitability || {}).forEach(([work, level]) => {
       const current = works.get(work) || { max: 0, count: 0 };
@@ -303,6 +373,10 @@ function renderTeamSummary() {
     <div><strong>${totalHp}</strong><span>HP base</span></div>
     <div><strong>${mountCount}</strong><span>${mountCount === 1 ? "Montaria" : "Montarias"}</span></div>
     <div class="team-metric-elements"><span>Elementos</span><div>${[...elements.keys()].map((element) => teamIcon(TEAM_ELEMENTS[element], "team-element-icon")).join("")}</div></div>`;
+
+  const sortMatchups = (entries) => [...entries].sort((a, b) => b[1] - a[1] || (TEAM_ELEMENTS[a[0]]?.label || a[0]).localeCompare(TEAM_ELEMENTS[b[0]]?.label || b[0], "pt-BR"));
+  teamDom.effectiveElements.innerHTML = teamMatchupListMarkup(sortMatchups(effectiveElements), "Sem vantagem elemental direta");
+  teamDom.threatElements.innerHTML = teamMatchupListMarkup(sortMatchups(threatElements), "Sem fraqueza elemental registrada");
 
   renderPartnerEffects(team);
 
@@ -356,6 +430,20 @@ function renderTeamBuilder() {
   renderTeamCatalog();
 }
 
+function guideToTeamCatalog() {
+  const panel = teamDom.catalogPanel;
+  if (!panel) return;
+  window.clearTimeout(guideToTeamCatalog.timeout);
+  panel.classList.remove("is-guided");
+  void panel.offsetWidth;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const panelRect = panel.getBoundingClientRect();
+  const catalogHeadingIsVisible = panelRect.top >= 70 && panelRect.top < window.innerHeight - 120;
+  if (!catalogHeadingIsVisible) panel.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  panel.classList.add("is-guided");
+  guideToTeamCatalog.timeout = window.setTimeout(() => panel.classList.remove("is-guided"), 2100);
+}
+
 function addPalToTeam(key) {
   if (teamState.teamKeys.length >= TEAM_LIMIT) {
     showTeamToast("Seu time já possui seis Pals.");
@@ -386,6 +474,7 @@ function moveTeamPalTo(source, target) {
 }
 
 let activeTeamDrag = null;
+let suppressTeamSlotClick = false;
 
 function activateTeamDrag(event) {
   if (!activeTeamDrag || activeTeamDrag.active) return;
@@ -437,6 +526,11 @@ function finishTeamDrag(event, cancelled = false) {
   drag.slot.classList.remove("is-drag-source");
   document.querySelectorAll(".team-slot.is-drop-target").forEach((slot) => slot.classList.remove("is-drop-target"));
   document.body.classList.remove("team-dragging");
+
+  if (drag.active) {
+    suppressTeamSlotClick = true;
+    window.setTimeout(() => { suppressTeamSlotClick = false; }, 0);
+  }
 
   if (!cancelled && drag.active && drag.targetIndex !== drag.sourceIndex) {
     moveTeamPalTo(drag.sourceIndex, drag.targetIndex);
@@ -563,17 +657,21 @@ teamDom.catalog?.addEventListener("click", (event) => {
   if (button) addPalToTeam(button.dataset.addPal);
 });
 
+teamDom.summaryEmpty?.addEventListener("click", (event) => {
+  if (event.target.closest('[data-team-action="catalog"]')) guideToTeamCatalog();
+});
+
 teamDom.slots?.addEventListener("pointerdown", (event) => {
-  const handle = event.target.closest(".team-drag-handle");
-  if (!handle || activeTeamDrag) return;
-  const slot = handle.closest(".team-slot-filled");
+  const dragHandle = event.target.closest(".team-drag-handle");
+  if (activeTeamDrag || (event.target.closest("button, input, select, textarea") && !dragHandle)) return;
+  const slot = event.target.closest(".team-slot-filled");
   if (!slot) return;
 
-  event.preventDefault();
+  if (!event.target.closest("a")) event.preventDefault();
   const rect = slot.getBoundingClientRect();
   activeTeamDrag = {
     active: false,
-    handle,
+    handle: slot,
     slot,
     rect,
     pointerId: event.pointerId,
@@ -586,7 +684,11 @@ teamDom.slots?.addEventListener("pointerdown", (event) => {
     ghost: null,
     holdTimer: window.setTimeout(() => activateTeamDrag(event), 160),
   };
-  handle.setPointerCapture(event.pointerId);
+  slot.setPointerCapture(event.pointerId);
+});
+
+teamDom.slots?.addEventListener("dragstart", (event) => {
+  if (event.target.closest(".team-slot-filled")) event.preventDefault();
 });
 
 document.addEventListener("pointermove", (event) => {
@@ -622,9 +724,32 @@ teamDom.slots?.addEventListener("keydown", (event) => {
 });
 
 teamDom.slots?.addEventListener("click", (event) => {
+  if (suppressTeamSlotClick) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
   const button = event.target.closest("[data-team-action]");
   if (!button) return;
   const index = Number(button.dataset.teamIndex);
+  if (button.dataset.teamAction === "catalog") {
+    guideToTeamCatalog();
+    return;
+  }
+  if (button.dataset.teamAction === "flip") {
+    const slot = button.closest(".team-slot-filled");
+    if (!slot) return;
+    const flipped = slot.classList.toggle("is-flipped");
+    button.textContent = flipped ? "↩" : "?";
+    button.setAttribute("aria-pressed", String(flipped));
+    button.setAttribute("aria-label", flipped ? "Voltar para a frente do card" : `Mostrar estatísticas de ${findTeamPal(teamState.teamKeys[index])?.namePt || "Pal"}`);
+    slot.querySelector(".team-slot-front")?.setAttribute("aria-hidden", String(flipped));
+    slot.querySelector(".team-slot-back")?.setAttribute("aria-hidden", String(!flipped));
+    slot.querySelectorAll(".team-slot-front a, .team-slot-front button").forEach((element) => {
+      element.tabIndex = flipped ? -1 : 0;
+    });
+    return;
+  }
   if (button.dataset.teamAction === "remove") {
     const removedPal = findTeamPal(teamState.teamKeys[index]);
     teamState.teamKeys.splice(index, 1);

@@ -25,12 +25,16 @@ class ContentParserTests(SimpleTestCase):
         parser = PalContentParser()
         parser.feed(
             '<div class="passive skills"><div class="name">Vendaval Relâmpago</div>'
-            '<div class="content"><p>Você pode montar nas suas costas.</p></div></div>'
+            '<div class="content"><p>Você pode montar nas suas costas.</p></div>'
+            '<div class="name">Outra informação</div><p>Texto que não pertence à habilidade.</p></div>'
             '<div class="active skills"><div class="item"><div class="name">Tiro de Faísca</div>'
             '<div class="level">- Lv 7</div><div class="content"><p>Dispara uma esfera elétrica.</p></div>'
+            '<div class="name">Alcance:</div>'
             '</div></div><div class="drops"><div class="name">Couro</div></div>'
         )
+        self.assertEqual(parser.active_skills[0]["name"], "Tiro de Faísca")
         self.assertEqual(parser.partner["name"], "Vendaval Relâmpago")
+        self.assertEqual(parser.partner["description"], "Você pode montar nas suas costas.")
         self.assertEqual(parser.active_skills[0]["level"], 7)
         self.assertEqual(parser.active_skills[0]["description"], "Dispara uma esfera elétrica.")
         self.assertEqual(parser.drops, ["Couro"])

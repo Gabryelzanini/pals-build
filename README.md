@@ -17,4 +17,4 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-O endereço padrão é `http://127.0.0.1:8000/`
+O endereço padrão é `http://127.0.0.1:8000/`.
