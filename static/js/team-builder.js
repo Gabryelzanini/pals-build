@@ -6,7 +6,7 @@ const TEAM_PARTNER_FALLBACK_URL = "https://raw.githubusercontent.com/MagitekZed/
 const TEAM_IMAGE_BASE = "https://palworld.gg/images/full_palicon";
 const TEAM_LEGACY_IMAGE_BASE = "https://raw.githubusercontent.com/mlg404/palworld-paldex-api/main/public/images/paldeck";
 const TEAM_STORAGE_KEY = "palsbuild-team-v1";
-const TEAM_LIMIT = 6;
+const TEAM_LIMIT = 5;
 
 const TEAM_ELEMENTS = {
   ice: { label: "Gelo", iconUrl: "/static/images/icons/elements/ice128.png" },
@@ -446,7 +446,7 @@ function guideToTeamCatalog() {
 
 function addPalToTeam(key) {
   if (teamState.teamKeys.length >= TEAM_LIMIT) {
-    showTeamToast("Seu time já possui seis Pals.");
+    showTeamToast("Seu time já possui cinco Pals.");
     return;
   }
   if (!findTeamPal(key)) return;

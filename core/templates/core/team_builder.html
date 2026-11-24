@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Criador de times — PalsBuild{% endblock %}
-{% block meta_description %}Monte um time de até seis Pals e compare elementos e aptidões de trabalho.{% endblock %}
+{% block meta_description %}Monte um time de até cinco Pals e compare elementos e aptidões de trabalho.{% endblock %}
 
 {% block content %}
   <section class="team-builder-page" id="team-builder" aria-labelledby="team-builder-title">
@@ -11,7 +11,7 @@
         <div>
           <p class="eyebrow">PLANEJAMENTO</p>
           <h1 id="team-builder-title">Monte seu <span>time</span></h1>
-          <p>Escolha até seis Pals e veja rapidamente os elementos e trabalhos cobertos pelo grupo.</p>
+          <p>Escolha até cinco Pals e veja rapidamente os elementos e trabalhos cobertos pelo grupo.</p>
         </div>
       </header>
 
@@ -24,12 +24,12 @@
                 <h2 id="composition-title">Composição do time</h2>
               </div>
               <div class="team-panel-actions">
-                <span id="team-count">0 / 6 Pals</span>
+                <span id="team-count">0 / 5 Pals</span>
                 <button id="clear-team" type="button" disabled>Limpar time</button>
               </div>
             </div>
             <div class="team-slots" id="team-slots" aria-live="polite" aria-busy="true">
-              {% for position in '123456' %}
+              {% for position in '12345' %}
                 <div class="team-slot team-slot-empty">
                   <button class="team-add-guide-button" type="button" data-team-action="catalog" data-team-index="{{ forloop.counter0 }}" aria-label="Ir para Adicionar Pals">+</button>
                   <span class="team-slot-position">Slot {{ position }}</span>
@@ -126,4 +126,4 @@
   </section>
 {% endblock %}
 
-{% block extra_js %}<script src="{% static 'js/team-builder.js' %}?v=20261121-1" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'js/team-builder.js' %}?v=20261124-1" defer></script>{% endblock %}
