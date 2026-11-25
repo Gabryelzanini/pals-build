@@ -42,7 +42,7 @@ class ContentParserTests(SimpleTestCase):
 
 class HomePageTests(TestCase):
     def test_home_page_responds(self):
-        response = self.client.get(reverse("core:home"))
+        response = self.client.get(reverse("core:team_builder"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Seu universo")
         self.assertContains(response, "Palworld")
